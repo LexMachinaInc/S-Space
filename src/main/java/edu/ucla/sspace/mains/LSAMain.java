@@ -138,8 +138,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LSAMain extends GenericMain {
 
     private BasisMapping<String, String> basis;
+    private LatentSemanticAnalysis lsa;
+    
+    final boolean processSpace;
+    boolean retainDocSpace = false;
 
-    private LSAMain() {
+    private LSAMain(boolean processSpace) {
+      this.processSpace = processSpace;
     }
 
     /**
@@ -162,8 +167,28 @@ public class LSAMain extends GenericMain {
     }
 
     public static void main(String[] args) throws Exception {
-        LSAMain lsa = new LSAMain();
-        lsa.run(args);
+        LSAMain lsaMain = create();
+        lsaMain.run(args);
+    }
+    
+    public static LSAMain create() throws Exception {
+        LSAMain lsaMain = new LSAMain(true);
+        return lsaMain;
+    }
+    
+    /** don't process the space, just load the docs */
+    public static LSAMain precreate() throws Exception {
+        LSAMain lsaMain = new LSAMain(false);
+        return lsaMain;
+    }
+    
+    public void setRetainDocSpace(boolean b) {
+      retainDocSpace = b;
+    }
+    
+    @Override 
+    protected boolean shouldProcessAndSaveSpace() {
+      return processSpace;
     }
     
     protected SemanticSpace getSpace() {
@@ -178,13 +203,14 @@ public class LSAMain extends GenericMain {
                     Algorithm.valueOf(algName.toUpperCase()));
             basis = new StringBasisMapping();
 
-            return new LatentSemanticAnalysis(
-                false, dimensions, transform, factorization, false, basis);
+            lsa = new LatentSemanticAnalysis(
+                retainDocSpace, dimensions, transform, factorization, false, basis);
+            return lsa;
         } catch (IOException ioe) {
             throw new IOError(ioe);
         }
     }
-
+    
     /**
      * Returns the {@likn SSpaceFormat.BINARY binary} format as the default
      * format of a {@code LatentSemanticAnalysis} space.
@@ -209,4 +235,9 @@ public class LSAMain extends GenericMain {
             "available.  However, in the event that it\nis needed, valid" +
             " options are: SVDLIBC, SVDLIBJ, MATLAB, OCTAVE, JAMA and COLT\n";
     }
+    
+    public LatentSemanticAnalysis getLSA() { 
+      return lsa; 
+    }
+
 }

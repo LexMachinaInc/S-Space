@@ -21,41 +21,35 @@
 
 package edu.ucla.sspace.mains;
 
-import edu.ucla.sspace.common.ArgOptions;
-import edu.ucla.sspace.common.SemanticSpace;
-import edu.ucla.sspace.common.SemanticSpaceIO;
-import edu.ucla.sspace.common.SemanticSpaceIO.SSpaceFormat;
-
-import edu.ucla.sspace.text.CorpusReader;
-import edu.ucla.sspace.text.Document;
-import edu.ucla.sspace.text.FileListDocumentIterator;
-import edu.ucla.sspace.text.IteratorFactory;
-import edu.ucla.sspace.text.OneLinePerDocumentIterator;
-
-import edu.ucla.sspace.util.CombinedIterator;
-import edu.ucla.sspace.util.LimitedIterator;
-import edu.ucla.sspace.util.LoggerUtil;
-import edu.ucla.sspace.util.ReflectionUtil;
-import edu.ucla.sspace.util.WorkQueue;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Set;
-
 import java.util.concurrent.atomic.AtomicInteger;
-
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.ucla.sspace.common.ArgOptions;
+import edu.ucla.sspace.common.GenericTermDocumentVectorSpace;
+import edu.ucla.sspace.common.SemanticSpace;
+import edu.ucla.sspace.common.SemanticSpaceIO;
+import edu.ucla.sspace.common.SemanticSpaceIO.SSpaceFormat;
+import edu.ucla.sspace.text.CorpusReader;
+import edu.ucla.sspace.text.Document;
+import edu.ucla.sspace.text.FileListDocumentIterator;
+import edu.ucla.sspace.text.IteratorFactory;
+import edu.ucla.sspace.text.OneLinePerDocumentIterator;
+import edu.ucla.sspace.util.CombinedIterator;
+import edu.ucla.sspace.util.LimitedIterator;
+import edu.ucla.sspace.util.LoggerUtil;
+import edu.ucla.sspace.util.ReflectionUtil;
+import edu.ucla.sspace.util.WorkQueue;
 
 
 /**
@@ -435,6 +429,15 @@ public abstract class GenericMain {
         Iterator<Document> docIter = getDocumentIterator();
         
         processDocumentsAndSpace(space, docIter, numThreads, props);
+        
+        if (!shouldProcessAndSaveSpace()) {
+          // THIS IS A NASTY HACK, because it assumes what kind of a space
+          // we are working with. However, this shouldProcess... hack is
+          // already making assumptions that it can stop at this point 
+          // and leave things in a working state.
+          ((GenericTermDocumentVectorSpace)space).getMatrixBuilder().finish();
+          return;
+        }
 
         File outputPath = new File(argOptions.getPositionalArg(0));
         File outputFile = null;
@@ -508,6 +511,10 @@ public abstract class GenericMain {
                                             int numThreads,
                                             Properties props) throws Exception {
         parseDocumentsMultiThreaded(space, docIter, numThreads);
+        
+        if (!shouldProcessAndSaveSpace()) {
+          return;
+        }
 
         long startTime = System.currentTimeMillis();
         space.processSpace(props);
@@ -515,7 +522,12 @@ public abstract class GenericMain {
         verbose("processed space in %.3f seconds",
                 ((endTime - startTime) / 1000d));
     }
-        
+    
+    /** Override by child classes */
+    protected boolean shouldProcessAndSaveSpace() {
+      return true;
+    }
+    
     /**
      * Calls {@link SemanticSpace#processDocument(BufferedReader)
      * processDocument} once for every document in {@code docIter} using a

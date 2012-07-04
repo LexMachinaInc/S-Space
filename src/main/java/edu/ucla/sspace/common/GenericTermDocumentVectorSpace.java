@@ -328,4 +328,12 @@ public abstract class GenericTermDocumentVectorSpace implements SemanticSpace {
      */
     protected void handleDocumentHeader(int docIndex, String header) {
     }
+    
+    public MatrixBuilder getMatrixBuilder() { 
+      return termDocumentMatrixBuilder; 
+    }
+    
+    public BasisMapping<String, String> getTermMapping() {
+      return termToIndex;
+    }
 }
