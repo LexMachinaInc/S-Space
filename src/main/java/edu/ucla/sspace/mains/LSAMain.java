@@ -21,28 +21,22 @@
 
 package edu.ucla.sspace.mains;
 
-import edu.ucla.sspace.basis.BasisMapping;
-import edu.ucla.sspace.basis.StringBasisMapping;
-
-import edu.ucla.sspace.common.ArgOptions;
-import edu.ucla.sspace.common.SemanticSpace;
-import edu.ucla.sspace.common.SemanticSpaceIO.SSpaceFormat;
-
-import edu.ucla.sspace.lsa.LatentSemanticAnalysis;
-
-import edu.ucla.sspace.matrix.LogEntropyTransform;
-import edu.ucla.sspace.matrix.MatrixFactorization;
-import edu.ucla.sspace.matrix.Transform;
-import edu.ucla.sspace.matrix.SVD;
-import edu.ucla.sspace.matrix.SVD.Algorithm;
-
-import edu.ucla.sspace.util.ReflectionUtil;
-import edu.ucla.sspace.util.SerializableUtil;
-
 import java.io.IOError;
 import java.io.IOException;
 
-import java.util.concurrent.ConcurrentHashMap;
+import edu.ucla.sspace.basis.BasisMapping;
+import edu.ucla.sspace.basis.StringBasisMapping;
+import edu.ucla.sspace.common.ArgOptions;
+import edu.ucla.sspace.common.SemanticSpace;
+import edu.ucla.sspace.common.SemanticSpaceIO.SSpaceFormat;
+import edu.ucla.sspace.lsa.LatentSemanticAnalysis;
+import edu.ucla.sspace.matrix.LogEntropyTransform;
+import edu.ucla.sspace.matrix.MatrixFactorization;
+import edu.ucla.sspace.matrix.SVD;
+import edu.ucla.sspace.matrix.SVD.Algorithm;
+import edu.ucla.sspace.matrix.Transform;
+import edu.ucla.sspace.util.ReflectionUtil;
+import edu.ucla.sspace.util.SerializableUtil;
 
 
 /**
@@ -142,6 +136,8 @@ public class LSAMain extends GenericMain {
     
     final boolean processSpace;
     boolean retainDocSpace = false;
+    private boolean useMultipleThreads;
+    private Transform transform = new LogEntropyTransform();
 
     private LSAMain(boolean processSpace) {
       this.processSpace = processSpace;
@@ -182,8 +178,17 @@ public class LSAMain extends GenericMain {
         return lsaMain;
     }
     
+    public void setMultiThreaded(boolean b) {
+      useMultipleThreads = b;
+    }
+    
     public void setRetainDocSpace(boolean b) {
       retainDocSpace = b;
+    }
+    
+    @Override 
+    protected boolean shouldUseMultipleThreads() {
+      return useMultipleThreads;
     }
     
     @Override 
@@ -191,10 +196,13 @@ public class LSAMain extends GenericMain {
       return processSpace;
     }
     
+    public void setTransform(Transform t) {
+      transform = t;
+    }
+    
     protected SemanticSpace getSpace() {
         try {
             int dimensions = argOptions.getIntOption("dimensions", 300);
-            Transform transform = new LogEntropyTransform();
             if (argOptions.hasOption("preprocess"))
                 transform = ReflectionUtil.getObjectInstance(
                         argOptions.getStringOption("preprocess"));

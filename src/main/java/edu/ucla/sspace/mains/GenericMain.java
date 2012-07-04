@@ -510,7 +510,13 @@ public abstract class GenericMain {
                                             Iterator<Document> docIter,
                                             int numThreads,
                                             Properties props) throws Exception {
-        parseDocumentsMultiThreaded(space, docIter, numThreads);
+      
+        // single threads make for easier testing because of doc order
+        if (shouldUseMultipleThreads()) {
+          parseDocumentsMultiThreaded(space, docIter, numThreads);
+        } else {
+          parseDocumentsSingleThreaded(space, docIter);
+        }
         
         if (!shouldProcessAndSaveSpace()) {
           return;
@@ -525,6 +531,9 @@ public abstract class GenericMain {
     
     /** Override by child classes */
     protected boolean shouldProcessAndSaveSpace() {
+      return true;
+    }
+    protected boolean shouldUseMultipleThreads() {
       return true;
     }
     
