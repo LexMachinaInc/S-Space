@@ -371,4 +371,9 @@ public class LatentSemanticAnalysis extends GenericTermDocumentVectorSpace {
             documentSpace = Matrices.transpose(reducer.classFeatures());
         }
     }
+    
+    public MatrixFactorization getReducer() {
+      return reducer;
+    }
+
 }
