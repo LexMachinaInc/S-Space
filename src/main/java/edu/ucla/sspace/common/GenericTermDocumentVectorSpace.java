@@ -336,4 +336,8 @@ public abstract class GenericTermDocumentVectorSpace implements SemanticSpace {
     public BasisMapping<String, String> getTermMapping() {
       return termToIndex;
     }
+    
+    public Matrix getWordSpace() { 
+      return wordSpace; 
+    }
 }
