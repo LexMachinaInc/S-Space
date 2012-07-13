@@ -24,7 +24,11 @@ package edu.ucla.sspace.mains;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,6 +44,9 @@ import edu.ucla.sspace.common.GenericTermDocumentVectorSpace;
 import edu.ucla.sspace.common.SemanticSpace;
 import edu.ucla.sspace.common.SemanticSpaceIO;
 import edu.ucla.sspace.common.SemanticSpaceIO.SSpaceFormat;
+import edu.ucla.sspace.lsa.LatentSemanticAnalysis;
+import edu.ucla.sspace.matrix.MatrixFactorization;
+import edu.ucla.sspace.matrix.factorization.SingularValueDecompositionLibC;
 import edu.ucla.sspace.text.CorpusReader;
 import edu.ucla.sspace.text.Document;
 import edu.ucla.sspace.text.FileListDocumentIterator;
@@ -501,6 +508,29 @@ public abstract class GenericMain {
             : getSpaceFormat();
 
         SemanticSpaceIO.save(sspace, outputFile, format);
+        // DBG hack to get singulars
+        if (sspace instanceof LatentSemanticAnalysis) {
+          MatrixFactorization reducer = ((LatentSemanticAnalysis)sspace).getReducer();
+          if (reducer instanceof SingularValueDecompositionLibC) {
+            double[] singulars = ((SingularValueDecompositionLibC)reducer).singularValues();
+            writeSingulars(new File(outputFile + ".sing"), singulars);
+          }
+        }
+    }
+
+    private void writeSingulars(File file, double[] singulars) {
+      System.out.println(Arrays.toString(singulars));
+      try {
+        Writer out = new PrintWriter(new FileWriter(file));
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i < singulars.length; i++) {
+          sb.append("\t" + singulars[i]);
+        }
+        out.write(sb.toString().trim());
+        out.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
 
     /**
