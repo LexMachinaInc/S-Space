@@ -396,4 +396,12 @@ public class StaticSemanticSpace implements SemanticSpace {
         throw new UnsupportedOperationException(
             "StaticSemanticSpace instances cannot be updated");
     }
+    
+    public Map<String, Integer> getTermIndex() {
+      return termToIndex;
+    }
+    
+    public Matrix getWordSpace() {
+      return wordSpace;
+    }
 }
