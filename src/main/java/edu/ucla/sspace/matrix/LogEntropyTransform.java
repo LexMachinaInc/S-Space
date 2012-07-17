@@ -21,21 +21,21 @@
 
 package edu.ucla.sspace.matrix;
 
-import edu.ucla.sspace.util.IntegerMap;
-
-import edu.ucla.sspace.vector.SparseDoubleVector;
-
-import java.io.IOError;
-import java.io.IOException;
-import java.io.File;
-
-import java.util.Iterator;
-import java.util.Map;
-
-import java.util.logging.Logger;
-
 import static edu.ucla.sspace.common.Statistics.log2;
 import static edu.ucla.sspace.common.Statistics.log2_1p;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOError;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import edu.ucla.sspace.matrix.MatrixIO.Format;
+import edu.ucla.sspace.util.IntegerMap;
+import edu.ucla.sspace.vector.SparseDoubleVector;
 
 
 /**
@@ -96,15 +96,24 @@ public class LogEntropyTransform extends BaseTransform {
     }
 
     /**
+     * The entropy for every row, moved outside LogEntropyGlobalTransform 
+     * so that it can be accessed.  See note on accessor method.
+     */
+    private double[] rowEntropy;
+    
+    /**
+     * WARNING: only valid for the last time getTransform() was called.
+     * Not robust -- this is only being used in a test environment.
+     */
+    public double getGlobalTransformValue(int i) {
+      return rowEntropy[i];
+    }
+
+    /**
      * The real implementation of the Log Entropy transformation as a {@link
      * GlobalTransform}
      */
     public class LogEntropyGlobalTransform implements GlobalTransform {
-
-        /**
-         * The entropy for every row.
-         */
-        private double[] rowEntropy;
 
         /**
          * Creates an instance of {@code LogEntropyGlobalTransform} from a
@@ -220,6 +229,17 @@ public class LogEntropyTransform extends BaseTransform {
             // Scale the entropy by the log of the number of columns.
             for (int row = 0; row < numRows; ++row)
                 rowEntropy[row] = 1 + (rowEntropy[row] / log2(numColumns));
+            
+            // dump these out to a file
+            PrintWriter out = null;
+            try {
+              out = new PrintWriter(new FileWriter(new File("transform_values.txt")));
+            } catch (IOException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+            for (int row = 0; row < numRows; ++row)
+              out.print(rowEntropy[row] + " ");
         }
 
         /**
@@ -241,5 +261,7 @@ public class LogEntropyTransform extends BaseTransform {
         public double transform(int row, int column, double value) {
             return log2_1p(value) * rowEntropy[row];
         }
+
     }
+    
 }

@@ -380,4 +380,8 @@ public class LatentSemanticAnalysis extends GenericTermDocumentVectorSpace {
       return documentSpace;
     }
 
+    public Transform getTransform() {
+      return transform;
+    }
+
 }
