@@ -233,13 +233,14 @@ public class LogEntropyTransform extends BaseTransform {
             // dump these out to a file
             PrintWriter out = null;
             try {
-              out = new PrintWriter(new FileWriter(new File("transform_values.txt")));
+              out = new PrintWriter(new FileWriter(new File("model.sspace.trans")));
             } catch (IOException e) {
               // TODO Auto-generated catch block
               e.printStackTrace();
             }
             for (int row = 0; row < numRows; ++row)
               out.print(rowEntropy[row] + " ");
+            out.close();
         }
 
         /**
