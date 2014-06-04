@@ -225,6 +225,7 @@
         </executions>
         <configuration>
           <splitindex>true</splitindex>
+          <additionalparam>-Xdoclint:none</additionalparam>
         </configuration>
       </plugin>
 
