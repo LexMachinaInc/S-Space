@@ -218,7 +218,6 @@
         <executions>
           <execution>
             <goals>
-              <goal>jar</goal>
               <goal>javadoc</goal>
             </goals>
           </execution>
@@ -230,6 +229,7 @@
       </plugin>
 
       <!-- Plugin to create a single jar of all source files. -->
+      <!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
@@ -242,6 +242,7 @@
           </execution>
         </executions>
       </plugin>
+      -->
 
       <!-- Plugin to create a single jar that includes all dependencies -->
       <plugin>
